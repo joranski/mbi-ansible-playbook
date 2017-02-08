@@ -1,0 +1,10 @@
+---
+- name: ensure that firewalld is started and enable at boot
+  service: name=firewalld enabled=yes state=started
+
+- name: open up port 22 (ssh)
+  firewalld: port=22/tcp permanent=yes state=enabled immediate=yes
+- name: open up port 80 (http)
+  firewalld: port=80/tcp permanent=yes state=enabled immediate=yes
+- name: open up port 443 (https)
+  firewalld: port=443/tcp permanent=yes state=enabled immediate=yes

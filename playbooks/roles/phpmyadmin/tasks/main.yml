@@ -1,0 +1,6 @@
+---
+- name: Install phpMyAdmin
+  yum: name=phpMyAdmin enablerepo=remi-php56 state=present
+
+- name: Symlink phpMyAdmin to /var/www/vhosts/default/public/pma
+  file: src=/usr/share/phpMyAdmin dest=/var/www/vhosts/default/public/pma owner=root group=root state=link

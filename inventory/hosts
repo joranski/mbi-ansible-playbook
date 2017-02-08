@@ -1,0 +1,2 @@
+[lamp-mbi]
+mbi ansible_port=22 ansible_host=localhost

@@ -1,0 +1,20 @@
+---
+- name: add several users
+  user: name={{ item.name }} state={{ item.state|default('present') }} force={{ item.force|default('no') }} groups={{ item.groups }} group={{ item.group }}
+  with_items:
+    - { name: 'joranski', groups: 'wheel,joranski', group: 'wheel' }
+    - { name: 'oranski', groups: 'wheel,oranski', group: 'wheel' }
+    - { name: 'poranski', state: 'absent', force: 'yes', groups: 'poranski', group: 'poranski' }
+    - { name: 'ecoury', state: 'absent', force: 'yes', groups: 'ecoury', group: 'ecoury' }
+
+- name: Copy SSH private key
+  copy: src=.vimrc dest={{ item.dest }} 
+  with_items:
+    - { dest: '/home/joranski/.vimrc' }
+    - { dest: '/home/oranski/.vimrc' }
+
+
+#- name: remove several users
+#  user: name={{ item.name }} state=absent force=yes
+#  with_items:
+#    - { name: 'mswengler' }

@@ -1,0 +1,55 @@
+---
+- name: Install MySQL packages
+  yum: name={{item}} state=present
+  with_items:
+  - mariadb
+  - mariadb-server
+  - MySQL-python
+
+- name: Start MariaDB server
+  service: name=mariadb state=started enabled=true
+
+- name: Set root user password
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    password: "{{ mysql_root_password }}"
+    check_implicit_admin: yes
+    state: present
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+  when: mysql_root_password != ""
+
+- name: Copy .my.cnf file with root password credentials.
+  template: src=my.cnf.j2 dest=/root/.my.cnf owner=root group=root mode=0600
+  when: mysql_root_password != ""
+
+#- name: Delete remote root connections to MySQL
+#  mysql_user:
+#    user: root
+#    host: "{{ item }}"
+#    state: absent
+#  with_items:
+#    - "{{ inventory_hostname }}"
+#    - "{{ ansible_hostname }}"
+
+- name: Delete anonymous MySQL server users
+  mysql_user:
+    user: ""
+    host: "{{ item }}"
+    state: absent
+  with_items:
+    - localhost
+    - "{{ inventory_hostname }}"
+    - "{{ ansible_hostname }}"
+
+- name: Remove the test database
+  mysql_db:
+    name: test
+    state: absent
+
+- name: Restart the MySQL service
+  service: name=mariadb state=restarted
+  when: mysql_root_password != ""

@@ -1,0 +1,10 @@
+---
+- name: Install remi repo.
+  yum:
+    name: "https://rpms.remirepo.net/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+    state: present
+
+- name: Import remi GPG key.
+  rpm_key:
+    key: "https://rpms.remirepo.net/RPM-GPG-KEY-remi"
+    state: present

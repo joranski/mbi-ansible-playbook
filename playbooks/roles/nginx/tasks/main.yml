@@ -1,0 +1,22 @@
+---
+- name: Install nginx
+  yum: name=nginx state=present
+
+- name: Copy default nginx.conf
+  copy: src=nginx.conf dest=/etc/nginx owner=root group=root mode=0644
+
+- name: Copy default nginx vhost
+  copy: src=_default.conf dest=/etc/nginx/conf.d owner=root group=root mode=0644
+  register: nginx_vhost
+
+- name: Enable nginx on boot and start it now
+  service: name=nginx state=started enabled=yes
+
+- name: Create /var/www/vhosts
+  file:  path=/var/www/vhosts recurse=yes state=directory setype=httpd_sys_rw_content_t
+
+- name: Ensure /var/www/vhosts/default/public dir exists
+  file: path=/var/www/vhosts/default/public recurse=yes state=directory
+
+- name: Copy default vhost
+  copy: src=index.php dest=/var/www/vhosts/default/public owner=root group=root mode=0644

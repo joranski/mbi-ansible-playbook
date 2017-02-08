@@ -1,0 +1,32 @@
+---
+- name: Set up mbi server
+  hosts: lamp-mbi
+#  hosts: lamp-mbi
+  user: root
+  roles:
+  - { role: base }
+  - { role: users }
+  - { role: firewalld }
+  - { role: nginx }
+  - { role: mysql }
+  - { role: phpmyadmin }
+  - { role: zendframework1 }
+  vars_prompt:
+  - name: "mysql_root_password"
+    prompt: "New MySQL root password (blank to leave unchanged)"
+    private: yes
+    confirm: yes
+
+- name: Set up MBI websites
+  hosts: lamp-mbi
+#  hosts: lamp-mbi
+  user: root
+  roles:
+  - { role: websites }
+  vars_prompt:
+  - name: "install_mbi_websites"
+    prompt: "Install MBI Websites? (y/n)"
+    default: "n"
+  - name: "install_mbi_fresh"
+    prompt: "Install Fresh Clone of MBI websites if exists (fyi: This will delete all changes made)? (y/n)"
+    default: "n"

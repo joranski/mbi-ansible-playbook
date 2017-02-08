@@ -1,0 +1,103 @@
+---
+- name: Create /etc/nginx/common
+  file: path=/etc/nginx/common recurse=yes state=directory owner=root group=root mode=0755 follow=yes
+  when: install_mbi_websites == "y"
+
+- name: Copy SSH private key
+  copy: src=/home/joranski/.ssh/id_rsa dest=/root/.ssh/id_rsa owner=root group=root mode=0600 
+  when: install_mbi_websites == "y"
+
+- name: Copy SSH public key
+  copy: src=/home/joranski/.ssh/id_rsa.pub dest=/root/.ssh/id_rsa.pub owner=root group=root mode=0644 
+  when: install_mbi_websites == "y"
+
+- name: Copy nginx/common Files 
+  copy: src={{ item }} dest=/etc/nginx/common owner=root group=root mode=0644 follow=yes
+  with_fileglob:
+    - nginx/common/*
+  when: install_mbi_websites == "y"
+
+- name: Create /etc/nginx/conf.d
+  file: path=/etc/nginx/conf.d recurse=yes state=directory owner=root group=root mode=0755 follow=yes
+  when: install_mbi_websites == "y"
+
+- name: Copy nginx/conf.d Files 
+  copy: src={{ item }} dest=/etc/nginx/conf.d owner=root group=root mode=0644 follow=yes
+  with_fileglob:
+    - nginx/conf.d/*
+  when: install_mbi_websites == "y"
+
+- name: Add mappings to /etc/hosts
+  blockinfile:
+    dest: /etc/hosts
+    block: |
+      {{item.ip}} {{item.name}}
+    marker: "# {mark} ANSIBLE MANAGED MBI BLOCK {{item.name}}"
+  with_items:
+      - { name: mbiapi, ip: 127.0.0.1 }
+      - { name: api.mortgagebuyersinc.com, ip: 127.0.0.1 }
+      - { name: nginxapi.mortgagebuyersinc.com, ip: 127.0.0.1 }
+  when: install_mbi_websites == "y"
+
+#- git: repo={{ item.repo }} dest={{ item.dest }} force=yes
+#  with_items:
+#    - { repo: 'git@github.com:SouthwestMedical/api.southwestmedical.com.git', dest: '/var/www/vhosts/api.southwestmedical.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/backend.southwestmedical.com.git', dest: '/var/www/vhosts/backend.southwestmedical.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/cdn.southwestmedical.com.git', dest: '/var/www/vhosts/cdn.southwestmedical.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/justquickiewheelchairs.com.git', dest: '/var/www/vhosts/justquickiewheelchairs.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/quickie-wheelchairs.com.git', dest: '/var/www/vhosts/quickie-wheelchairs.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/southwestmedical.com.git', dest: '/var/www/vhosts/southwestmedical.com' }
+#    - { repo: 'git@github.com:SouthwestMedical/webservices.southwestmedical.com.git', dest: '/var/www/vhosts/webservices.southwestmedical.com' }
+#  when: ( install_mbi_websites == "y" and install_mbi_fresh == "y" )
+
+#- name: Symlink Zend to /var/www/share/Zend
+#  file: src=/var/www/share/Zend dest={{ item }}/library/Zend owner=root group=wheel state=link
+#  with_items:
+#    - /var/www/vhosts/api.southwestmedical.com
+#    - /var/www/vhosts/backend.southwestmedical.com
+#    - /var/www/vhosts/justquickiewheelchairs.com
+#    - /var/www/vhosts/quickie-wheelchairs.com
+#    - /var/www/vhosts/southwestmedical.com
+#    - /var/www/vhosts/webservices.southwestmedical.com
+#  when: install_mbi_websites == "y"
+
+#- name: Create directories for domains
+#  file: path={{ item.path }} recurse=yes state=directory owner=root group=wheel mode={{ item.mode|default(0775) }}
+#  with_items:
+#    - { path: /var/www/vhosts/api.southwestmedical.com }
+#    - { path: /var/www/vhosts/backend.southwestmedical.com }
+#    - { path: /var/www/vhosts/justquickiewheelchairs.com }
+#    - { path: /var/www/vhosts/quickie-wheelchairs.com }
+#    - { path: /var/www/vhosts/southwestmedical.com }
+#    - { path: /var/www/vhosts/webservices.southwestmedical.com }
+#    - { path: /var/www/vhosts/api.southwestmedical.com/application/config }
+#    - { path: /var/www/vhosts/backend.southwestmedical.com/application/config }
+#    - { path: /var/www/vhosts/justquickiewheelchairs.com/application/config }
+#    - { path: /var/www/vhosts/quickie-wheelchairs.com/application/config }
+#    - { path: /var/www/vhosts/southwestmedical.com/application/config }
+#    - { path: /var/www/vhosts/webservices.southwestmedical.com/application/config }
+#    - { path: /var/www/vhosts/api.southwestmedical.com/application/cache, mode: '0777' }
+#    - { path: /var/www/vhosts/quickie-wheelchairs.com/application/cache, mode: '0777' }
+#    - { path: /var/www/vhosts/southwestmedical.com/application/cache, mode: '0777' }
+#  when: install_mbi_websites == "y"
+
+- name: install composer
+  shell: curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  args:
+    creates: /usr/local/bin/composer
+  when: install_mbi_websites == "y"
+
+#- composer: command=install working_dir=/var/www/vhosts/cdn.southwestmedical.com
+#  when: install_mbi_websites == "y"
+
+#- mysql_db: name=swm state=present
+#  when: install_mbi_websites == "y"
+#- mysql_db: name=swmlegacy state=present
+#  when: install_mbi_websites == "y"
+#- mysql_db: name=justquickie state=present
+#  when: install_mbi_websites == "y"
+
+
+- name: Restart the nginx service
+  service: name=nginx state=restarted
+  when: install_mbi_websites == "y"

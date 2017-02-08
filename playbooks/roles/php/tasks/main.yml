@@ -1,0 +1,27 @@
+---
+- name: Install PHP packages
+  yum: name={{item}} enablerepo=remi-php56 state=present
+  with_items:
+  - php-fpm
+  - php-cli
+  - php-bcmath
+  - php-gd
+  - php-mbstring
+  - php-mysqlnd
+  - php-pdo
+  - php-tidy
+  - php-xml
+  - php-intl
+  - php-opcache
+
+- name: Enable php short tags
+  ini_file: dest=/etc/php.ini section=PHP option=short_open_tag value=On
+
+- name: Add /var/www/share to PHP include path
+  ini_file: dest=/etc/php.ini section=PHP option=include_path value=".:/var/www/share:/usr/share/pear:/usr/share/php"
+
+- name: Configure PHP-FPM Pool
+  copy: src=www.conf dest=/etc/php-fpm.d/ owner=root group=root mode=0644
+
+- name: Enable/Start PHP-FPM
+  service: name=php-fpm state=started enabled=yes

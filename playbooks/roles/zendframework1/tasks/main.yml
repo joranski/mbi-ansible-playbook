@@ -1,0 +1,15 @@
+---
+- name: Ensure /var/www/share dir exists
+  file: path=/var/www/share recurse=yes state=directory setype=httpd_sys_content_t
+
+- name: Download ZF1
+#  unarchive: src='https://packages.zendframework.com/releases/ZendFramework-1.12.20/ZendFramework-1.12.20-minimal.tar.gz' dest=/var/www/share remote_src=yes
+  get_url:
+    url: https://packages.zendframework.com/releases/ZendFramework-1.12.20/ZendFramework-1.12.20-minimal.tar.gz
+    dest: /var/www/share
+
+- name: Unarchive ZF1
+  command: /bin/tar -xzf /var/www/share/ZendFramework-1.12.20-minimal.tar.gz -C /var/www/share/ 
+
+- name: Symlink Zend to /var/www/share/Zend
+  file: src=/var/www/share/ZendFramework-1.12.20-minimal/library/Zend dest=/var/www/share/Zend owner=root group=root state=link
